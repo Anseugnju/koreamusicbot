@@ -23,9 +23,9 @@ import nacl
 from discord.ext import commands
 import sys
 
-봇토큰=os.getenv('token') #Bot token
-채널ID=os.getenv('chid') #CH ID
-명령어=os.getenv('prefix') #command_prefix
+봇토큰=os.environ['token'] #Bot token
+채널ID=901700812374441988 #CH ID
+명령어="!" #command_prefix
 YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist':'True'}
 FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
 chromedriver_dir ="chromedriver" #chromedriver dev
