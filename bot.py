@@ -91,17 +91,6 @@ async def on_ready():
 async def on_message(message, pass_context=True):
     if message.channel.id == 채널ID:
         
-        if message.author.bot == 1:
-            return
-        datetime_utc = datetime.utcnow()
-        datetime_kst = datetime_utc.astimezone(timezone_kst)
-        now1 = datetime_kst.strftime("%m/%d %H:%M:%S")
-        file = f"채팅"
-        f = open(f"{file}.txt","a",encoding='UTF-8')
-        f.write(f"{now1}  {str(message.author.name)}: {message.content}\n")
-        time.sleep(1)
-        f.close()
-
         if not message.content.startswith(명령어):
             if message.author.bot == 1:
                 return
@@ -133,10 +122,7 @@ async def 버전(ctx):
     await channel.send(embed=embed)
 
 def 도움(): #도움말 내용
-    
-    f = open("과금.txt","r")
-    line = f.read()
-    f.close()
+
     embed = discord.Embed(
         title="도움말",
         colour=0x0097ff)
@@ -148,7 +134,6 @@ def 도움(): #도움말 내용
     embed.add_field(name=f"{명령어}cl , 재생목록초기화",value="재생목록을 초기화합니다.",inline=False)
     embed.add_field(name=f"{명령어}자동재생 , 자동재생종료",value="다음노래 틀어줌(딜레이 10초 정도 있음)",inline=False)
     embed.add_field(name=f"{명령어}즐겨찾기, {명령어}B, {명령어}F (DM으로 감)",value=f"추가 = {명령어}즐겨찾기추가, {명령어}B+, {명령어}F+\n제거 = {명령어}즐겨찾기삭제(숫자) {명령어}B- {명령어}F- ",inline=False)
-    embed.add_field(name="과금",value=f"{line}",inline=False)
     return embed
 
 
@@ -183,27 +168,6 @@ async def on_reaction_add(reaction, user):
             return
     if str(reaction.emoji) == restart:
         sys.exit()
-    if str(reaction.emoji) == star:
-        userid = user.id
-        file = f"./joy/{userid}.txt"
-        if not os.path.isfile(file): #즐겨찾기없다면 userid로 파일만듬
-            f = open(f"./joy/{userid}.txt","w")
-            f.close()
-
-        list_file = open(file, 'r').read().split('\n')
-        list_file = list(filter(None,list_file))
-        i=0
-        f = open(f"./joy/{userid}.txt","a")
-        if len(list_file)==0:
-            f.write(f"[{now_song[0]}]({now_song[1]})")
-        
-        else:
-            f.write(f"\n[{now_song[0]}]({now_song[1]})")
-        f.close()
-
-        channel = await user.create_dm()
-        await channel.send(embed = discord.Embed(title= "즐겨찾기", description = f"[{now_song[0]}]({now_song[1]})이(가) 정상적으로 추가되었어요", color = 0x0097ff))
-        await reaction.remove(user)
 
 @bot.command(aliases=["h","도움","help"]) #입력시 DM으로 보냄
 async def 도움말(ctx):
@@ -507,78 +471,6 @@ async def 자동재생종료(ctx):
     await ctx.message.delete()
     global auto_song
     auto_song = 0
-
-@bot.command(aliases=["f","F","b","B","bookmark","ㄹ","ㅠ"]) #즐겨찾기 확인 DM으로 옴
-async def 즐겨찾기(ctx):
-    await ctx.message.delete()
-    userid = ctx.message.author.id
-    file = f"./joy/{userid}.txt"
-    if not os.path.isfile(file): #즐겨찾기없다면 userid로 파일만듬
-        f = open(f"./joy/{userid}.txt","w")
-        f.close()
-    
-    list_file = open(file, 'r').read().split('\n')
-    list_file = list(filter(None,list_file))
-    i=0
-    if len(list_file)==0:
-        channel = await ctx.author.create_dm()
-        await channel.send(embed = discord.Embed(title= "즐겨찾기", description = "아직 아무노래도 등록되지 않았어요.", color = 0x0097ff))
-    else:
-        global Text
-        Text = ""
-        while i < len(list_file):
-            Text = Text + "\n" + str(i+1) + ". " + str(list_file[i])
-            i+=1
-        channel = await ctx.author.create_dm()
-        await channel.send(embed = discord.Embed(title= "즐겨찾기", description = Text.strip(), color = 0x0097ff))
-
-@bot.command(aliases=["f+","F+","b+","B+","ㄹ+","ㅠ+"]) #즐겨찾기 추가
-async def 즐겨찾기추가(ctx, *, msg):
-    await ctx.message.delete()
-    userid = ctx.message.author.id
-    music, ytrul, URL, thumbnailtest = search(msg)
-
-    file = f"./joy/{userid}.txt"
-    if not os.path.isfile(file): #즐겨찾기없다면 userid로 파일만듬
-        f = open(f"./joy/{userid}.txt","w")
-        f.close()
-
-    list_file = open(file, 'r').read().split('\n')
-    list_file = list(filter(None,list_file))
-    i=0
-    f = open(f"./joy/{userid}.txt","a")
-    if len(list_file)==0:
-        f.write(f"[{music}]({ytrul})")
-    
-    else:
-        f.write(f"\n[{music}]({ytrul})")
-    f.close()
-
-    channel = await ctx.author.create_dm()
-    await channel.send(embed = discord.Embed(title= "즐겨찾기", description = f"[{music}]({ytrul})이(가) 정상적으로 추가되었어요", color = 0x0097ff))
-
-@bot.command(aliases=["f-","F-","b-","B-","ㄹ-","ㅠ-"]) #즐겨찾기 삭제
-async def 즐겨찾기삭제(ctx, *, number):
-    await ctx.message.delete()
-    userid = ctx.message.author.id
-    file = f"./joy/{userid}.txt"
-    if not os.path.isfile(file): #즐겨찾기없다면 userid로 파일만듬
-        f = open(f"./joy/{userid}.txt","w")
-        f.close()
-    
-    list_file = open(file, 'r').read().split('\n')
-    list_file = list(filter(None,list_file))
-    if len(list_file) < int(number):
-        msg = await ctx.send("입력한 숫자가 잘못되었거나 즐겨찾기의 범위를 초과하였습니다.")
-        time.sleep(5)
-        await msg.delete()
-    elif len(list_file) >= int(number):
-        f=open(f"./joy/{userid}.txt","w")
-        number1=int(number)-1
-        del list_file[number1]
-        f.write('\n'.join(list_file))
-        channel = await ctx.author.create_dm()
-        await channel.send(embed = discord.Embed(title= "즐겨찾기", description = f"{number}번째 즐겨찾기가 삭제되었어요.", color = 0x0097ff))
 
 
 bot.run(봇토큰)
