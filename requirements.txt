@@ -1,6 +1,6 @@
-discord.py
-asyncio
+discord
+yt-dlp
+PyNaCl
 selenium
 beautifulsoup4
-pynacl
-yt-dlp
+requests
