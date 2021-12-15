@@ -1,0 +1,6 @@
+discord.py
+asyncio
+selenium
+beautifulsoup4
+pynacl
+yt-dlp
