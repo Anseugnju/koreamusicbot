@@ -28,7 +28,7 @@ import sys
 명령어="!" #command_prefix
 YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist':'True'}
 FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
-chromedriver_dir ="chromedriver" #chromedriver dev
+chromedriver_dir =os.environ.get("CHROMEDRIVER_PATH") #chromedriver dev
 
 bot = commands.Bot(command_prefix = 명령어, help_command=None)
 now_song=[] #지금 노래 정보 [제목,유튜브링크,재생용링크]
@@ -90,7 +90,7 @@ async def on_ready():
 @bot.event
 async def on_message(message, pass_context=True):
     if message.channel.id == 채널ID:
-        
+
         if not message.content.startswith(명령어):
             if message.author.bot == 1:
                 return
