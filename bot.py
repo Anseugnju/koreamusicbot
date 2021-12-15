@@ -73,6 +73,7 @@ async def on_ready():
     global mid
     await bot.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name=f"{명령어}help "))
     ch = bot.get_channel(채널ID)
+    await ch.purge(limit=100)
     embed=도움()
     helpme = await ch.send(embed=embed)
     embed = embed_play()
