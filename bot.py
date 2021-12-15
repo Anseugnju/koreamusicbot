@@ -28,7 +28,9 @@ import sys
 명령어="!" #command_prefix
 YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist':'True'}
 FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
-chromedriver_dir =os.environ.get("CHROMEDRIVER_PATH") #chromedriver dev
+chromedriver_dir = os.environ.get("CHROMEDRIVER_PATH") #chromedriver dev
+googlechrome_dir = os.environ.get("GOOGLE_CHROME_BIN")
+options.binary_location= googlechrome_dir
 
 bot = commands.Bot(command_prefix = 명령어, help_command=None)
 now_song=[] #지금 노래 정보 [제목,유튜브링크,재생용링크]
