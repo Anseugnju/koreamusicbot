@@ -29,6 +29,9 @@ import sys
 YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist':'True'}
 FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
 chromedriver_dir = "/app/.chromedriver/bin/chromedriver" #chromedriver dev
+Coptions = webdriver.ChromeOptions()
+Coptions.binary_location = '/app/.apt/usr/bin/google-chrome'
+Coptions.add_argument("headless")
 
 bot = commands.Bot(command_prefix = 명령어, help_command=None)
 now_song=[] #지금 노래 정보 [제목,유튜브링크,재생용링크]
@@ -223,9 +226,7 @@ def embed_play(): #노래 임베드 내용
 def search(msg): #유튜브 검색
     if "https://www.youtube.com/" in msg:
         yturl = msg
-        options = webdriver.ChromeOptions()
-        options.add_argument("headless")
-        driver = webdriver.Chrome(chromedriver_dir, options = options)
+        driver = webdriver.Chrome(chromedriver_dir, options = Coptions)
         driver.get(msg)
         source = driver.page_source
         bs = bs4.BeautifulSoup(source, 'lxml')
@@ -241,11 +242,9 @@ def search(msg): #유튜브 검색
         driver.quit()
         return title, yturl, URL, thumbnailtest #제목 유튜브주소 음악재생용YDL링크 썸네일 링크
     주소 = "https://www.youtube.com/results?search_query="+msg
+
     
-    options = webdriver.ChromeOptions()
-    options.add_argument("headless")
-    
-    driver = webdriver.Chrome(chromedriver_dir, options = options)
+    driver = webdriver.Chrome(chromedriver_dir, options = Coptions)
     driver.get(주소)
     source = driver.page_source
     bs = bs4.BeautifulSoup(source, 'lxml')
@@ -267,10 +266,8 @@ def search(msg): #유튜브 검색
     return title, yturl, URL, thumbnailtest #제목 유튜브주소 음악재생용YDL링크 썸네일 링크
 
 def next_search(): #자동재생시 다음노래 검색
-    options = webdriver.ChromeOptions()
-    options.add_argument("headless")
 
-    driver = webdriver.Chrome(chromedriver_dir, options = options)
+    driver = webdriver.Chrome(chromedriver_dir, options = Coptions)
     driver.get(now_song[1])
     time.sleep(3)
     source = driver.page_source
