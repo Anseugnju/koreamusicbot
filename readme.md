@@ -3,6 +3,11 @@
 # 당신이 해야할것
 + https://discord.com/developers/applications 에서 디스코드 봇 등록 
 + requirements에 있는거 pip설치
+ + pip install discord.py 디스코드py
+ + pip install pynacl 디코 음성보내기
+ + pip install selenium 웹페이지 크롤링
+ + pip install beautifulsoup4 html검색및 처리
+ + pip install yt-dlp 유튜브처리
 + 크롬드라이버 경로설정
 + 봇토큰 채널ID 접두사 크롬드라이버 설정하고 실행하면 끝!
 
