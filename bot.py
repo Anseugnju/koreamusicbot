@@ -1,10 +1,4 @@
-from asyncio.tasks import sleep
 import os.path
-from enum import auto
-from platform import version
-from re import S, T
-import re
-from tokenize import Number
 import discord
 from discord import client
 from selenium.webdriver.chrome import options
@@ -23,8 +17,8 @@ import nacl
 from discord.ext import commands
 import sys
 
-봇토큰=os.environ.get('token')
-채널ID=int(os.environ.get('chid'))
+봇토큰="" #당신의 봇토큰을 넣어주세여
+채널ID=000000000000000 #음악싸개가 있어야할 채널ID를 넣어주세요
 명령어="!" #command_prefix
 YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist':'True'}
 FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
@@ -46,14 +40,12 @@ restart="❌" #재부팅
 star="⭐" #즐겨찾기 추가
 
 @bot.event
-async def on_command_error(ctx, error):
+async def on_command_error(ctx, error): #에러시 채팅창에 표시
     try:
-        if isinstance(error, commands.CommandNotFound):
+        if isinstance(error, commands.CommandNotFound): #존재하지 않는 명령어
             msg = await ctx.send("해당 명령어는 존재하지 않습니다!")
-        if isinstance(error, commands.MissingRequiredArgument):
+        if isinstance(error, commands.MissingRequiredArgument): #내용 없음
             msg = await ctx.send('내용을 입력해주세요!')
-        if isinstance(error, commands.MissingPermissions):
-            msg = await ctx.send("권한이 없어요!")
         print(error)
         await ctx.message.delete()
         print("에러발생!")
@@ -63,7 +55,7 @@ async def on_command_error(ctx, error):
         pass
 
 @bot.event
-async def on_ready(): 
+async def on_ready():  #봇 켜지면 작동
     print('Logged in as')
     print(bot.user.name)
     print(bot.user.id)
@@ -73,12 +65,12 @@ async def on_ready():
     global mid
     await bot.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name=f"{명령어}help "))
     ch = bot.get_channel(채널ID)
-    await ch.purge(limit=100)
+    await ch.purge(limit=100) #채팅채널에 있는 내용 삭제
     embed=도움()
     helpme = await ch.send(embed=embed)
     embed = embed_play()
     message = await ch.send(embed =embed)
-    await message.add_reaction(play_or_pause)
+    await message.add_reaction(play_or_pause) #반응추가
     await message.add_reaction(stop)
     await message.add_reaction(shuffle)
     await message.add_reaction(restart)
@@ -88,9 +80,8 @@ async def on_ready():
 
 
 @bot.event
-async def on_message(message, pass_context=True):
+async def on_message(message, pass_context=True): #메시지 오면 확인후 명령어 없으면 삭제
     if message.channel.id == 채널ID:
-
         if not message.content.startswith(명령어):
             if message.author.bot == 1:
                 return
@@ -103,7 +94,7 @@ async def on_message(message, pass_context=True):
 
 
 @bot.command()
-async def 버전(ctx):
+async def 버전(ctx): #업데이트 기록중인데 대충함
     await ctx.message.delete()
     embed = discord.Embed(
         title="버전",
@@ -138,10 +129,10 @@ def 도움(): #도움말 내용
 
 
 @bot.event
-async def on_reaction_add(reaction, user):
+async def on_reaction_add(reaction, user): #반응 클릭시 됨
     if user.bot == 1: #봇이면 패스
         return None
-    if str(reaction.emoji) == play_or_pause:
+    if str(reaction.emoji) == play_or_pause: #멈추거나 실행
         if vc.is_paused():
             vc.resume()
             await reaction.remove(user)
@@ -150,13 +141,13 @@ async def on_reaction_add(reaction, user):
             vc.pause()
             await reaction.remove(user)
             return
-    if str(reaction.emoji) == stop:
+    if str(reaction.emoji) == stop: #노래 끔 다음노래재생
         if vc.is_playing():
             vc.stop()
             await reaction.remove(user)
         else:
             return
-    if str(reaction.emoji) == shuffle:
+    if str(reaction.emoji) == shuffle: #자동재생
         global auto_song
         if auto_song == 0:
             auto_song = 1
@@ -166,8 +157,29 @@ async def on_reaction_add(reaction, user):
             auto_song = 0
             await reaction.remove(user)
             return
-    if str(reaction.emoji) == restart:
+    if str(reaction.emoji) == restart: #봇 재부팅
         sys.exit()
+    if str(reaction.emoji) == star:
+        userid = user.id
+        file = f"./joy/{userid}.txt"
+        if not os.path.isfile(file): #즐겨찾기없다면 userid로 파일만듬
+            f = open(f"./joy/{userid}.txt","w")
+            f.close()
+
+        list_file = open(file, 'r').read().split('\n')
+        list_file = list(filter(None,list_file))
+        i=0
+        f = open(f"./joy/{userid}.txt","a")
+        if len(list_file)==0:
+            f.write(f"[{now_song[0]}]({now_song[1]})")
+        
+        else:
+            f.write(f"\n[{now_song[0]}]({now_song[1]})")
+        f.close()
+
+        channel = await user.create_dm()
+        await channel.send(embed = discord.Embed(title= "즐겨찾기", description = f"[{now_song[0]}]({now_song[1]})이(가) 정상적으로 추가되었어요", color = 0x0097ff))
+        await reaction.remove(user)
 
 @bot.command(aliases=["h","도움","help"]) #입력시 DM으로 보냄
 async def 도움말(ctx):
@@ -190,7 +202,7 @@ async def 새로고침(message,helpme): #노래 상태 1초마다 변경
             except:
                 sys.exit()
 
-def tlwkr(ctx):
+def tlwkr(ctx): #에러뜨길래 한번 해봄
     try:
         vc.play(discord.FFmpegPCMAudio(now_song[2], **FFMPEG_OPTIONS), after=lambda e:play_next(ctx))
     except:
@@ -221,7 +233,7 @@ def embed_play(): #노래 임베드 내용
     return embed_playing
 
 def search(msg): #유튜브 검색
-    if "https://www.youtube.com/" in msg:
+    if "https://www.youtube.com/" in msg: #유튜브 링크로 확인
         yturl = msg
         
         options = webdriver.ChromeOptions()
@@ -243,7 +255,7 @@ def search(msg): #유튜브 검색
                 URL=fmt['url']
         driver.quit()
         return title, yturl, URL, thumbnailtest #제목 유튜브주소 음악재생용YDL링크 썸네일 링크
-    주소 = "https://www.youtube.com/results?search_query="+msg
+    주소 = "https://www.youtube.com/results?search_query="+msg #검색
 
     options = webdriver.ChromeOptions()
     options.binary_location = '/app/.apt/usr/bin/google-chrome'
@@ -288,7 +300,7 @@ def next_search(): #자동재생시 다음노래 검색
     thumbnailtest = thumbnailNum.get('src')
     i=0
     num=0
-    while i !=1: #자동재생 무한반복 방지
+    while i !=1: #자동재생시 같은노래 반복금지
         titlelist=next_song_title[num]
         title=titlelist["title"]
         hreflist= next_song_yturl[num]
@@ -319,7 +331,7 @@ def play_next(ctx): #노래 종료후 다음
     global auto_song_playing
     global auto_song
     try:
-        mc = len(bot.voice_clients[0].channel.voice_states) #멤버 수
+        mc = len(bot.voice_clients[0].channel.voice_states) #멤버 수 확인후 없으면 나감
         if mc<=1:
             now_song.clear()
             next_song.clear()
@@ -337,7 +349,7 @@ def play_next(ctx): #노래 종료후 다음
         auto_song_playing = 0 
         auto_song_next.clear()
     
-    if len(next_song) >= 1:
+    if len(next_song) >= 1: #다음노래 있으면 그거 재생
         if not vc.is_playing():
             auto_song_playlist.clear()
             now_song.clear()
@@ -346,7 +358,7 @@ def play_next(ctx): #노래 종료후 다음
             auto_song_playing=0
             tlwkr(ctx)
             return
-    elif len(next_song)==0 and len(auto_song_next)>=1 and auto_song_playing==1 and auto_song==1:
+    elif len(next_song)==0 and len(auto_song_next)>=1 and auto_song_playing==1 and auto_song==1: #자동재생시 대기열 추가
         if not vc.is_playing():
             now_song.clear()
             now_song.extend(auto_song_next)
@@ -358,7 +370,7 @@ def play_next(ctx): #노래 종료후 다음
             auto_song_next.extend(a)
             return
 
-    elif len(next_song)==0 and auto_song==1 :
+    elif len(next_song)==0 and auto_song==1 : #자동재생
         if not vc.is_playing():
             title, yturl, URL, thumbnailtest=next_search()
             a=[title, yturl, URL, thumbnailtest]
@@ -373,13 +385,13 @@ def play_next(ctx): #노래 종료후 다음
             return
 
     else:
-        if not vc.is_playing():
+        if not vc.is_playing(): #없으면 나가고 재부팅
             now_song.clear()
             bot.loop.create_task(vc.disconnect())
             
             sys.exit()
 
-@bot.command(aliases=["p","ㅔ","재생"]) #음악 재생
+@bot.command(aliases=["p","ㅔ","재생"]) #음악 재생 명령어
 async def play(ctx, *, msg):
     global vchannel
     global auto_song_playing
@@ -394,7 +406,7 @@ async def play(ctx, *, msg):
     if bot.voice_clients == []:
         await vchannel.connect()
     
-    vc = get(bot.voice_clients, guild=ctx.guild)
+    vc = get(bot.voice_clients, guild=ctx.guild) #여기서부터
     await ctx.message.delete()
     if msg=="호랑수월가":
         msg="https://www.youtube.com/watch?v=ki_s8lVwkX0"
@@ -403,10 +415,10 @@ async def play(ctx, *, msg):
             a = [title,yturl, URL, thumbnailtest]
             now_song.extend(a)
             tlwkr(ctx)
-        else: #있으면 next_song에 넣기
+        else:
             a = [title,yturl, URL, thumbnailtest]
             next_song.append(a)
-        return
+        return #여기까지 삭제해도됨
 
     title, yturl, URL, thumbnailtest = search(msg)
     
@@ -434,7 +446,7 @@ async def exit(ctx):
     await vc.disconnect(force=True)
     sys.exit()
 
-@bot.command(aliases=["재생목록삭제","deletelist","dl"]) #재생목록 중 삭제
+@bot.command(aliases=["재생목록삭제","deletelist","dl"]) #재생대기열에 있는거 삭제
 async def 목록삭제(ctx, *, number):
     await ctx.message.delete()
     try:
@@ -453,7 +465,7 @@ async def 목록삭제(ctx, *, number):
             time.sleep(5)
             await msg.delete()
 
-@bot.command(aliases=["재생목록초기화","listclaer","lc","cl"]) #재생목록 초기화
+@bot.command(aliases=["재생목록초기화","listclaer","lc","cl"]) #재생대기열 초기화
 async def 목록초기화(ctx):
     await ctx.message.delete()
     auto_song_playlist.clear()
@@ -477,6 +489,79 @@ async def 자동재생종료(ctx):
     await ctx.message.delete()
     global auto_song
     auto_song = 0
+
+@bot.command(aliases=["f","F","b","B","bookmark","ㄹ","ㅠ"]) #즐겨찾기 확인 DM으로 옴
+async def 즐겨찾기(ctx):
+    await ctx.message.delete()
+    userid = ctx.message.author.id
+    file = f"./joy/{userid}.txt"
+    if not os.path.isfile(file): #즐겨찾기없다면 userid로 파일만듬
+        f = open(f"./joy/{userid}.txt","w")
+        f.close()
+    
+    list_file = open(file, 'r').read().split('\n')
+    list_file = list(filter(None,list_file))
+    i=0
+    if len(list_file)==0:
+        channel = await ctx.author.create_dm()
+        await channel.send(embed = discord.Embed(title= "즐겨찾기", description = "아직 아무노래도 등록되지 않았어요.", color = 0x0097ff))
+    else:
+        global Text
+        Text = ""
+        while i < len(list_file):
+            Text = Text + "\n" + str(i+1) + ". " + str(list_file[i])
+            i+=1
+        channel = await ctx.author.create_dm()
+        await channel.send(embed = discord.Embed(title= "즐겨찾기", description = Text.strip(), color = 0x0097ff))
+
+@bot.command(aliases=["f+","F+","b+","B+","ㄹ+","ㅠ+"]) #즐겨찾기 추가
+async def 즐겨찾기추가(ctx, *, msg):
+    await ctx.message.delete()
+    userid = ctx.message.author.id
+    music, ytrul, URL, thumbnailtest = search(msg)
+
+    file = f"./joy/{userid}.txt"
+    if not os.path.isfile(file): #즐겨찾기없다면 userid로 파일만듬
+        f = open(f"./joy/{userid}.txt","w")
+        f.close()
+
+    list_file = open(file, 'r').read().split('\n')
+    list_file = list(filter(None,list_file))
+    i=0
+    f = open(f"./joy/{userid}.txt","a")
+    if len(list_file)==0:
+        f.write(f"[{music}]({ytrul})")
+    
+    else:
+        f.write(f"\n[{music}]({ytrul})")
+    f.close()
+
+    channel = await ctx.author.create_dm()
+    await channel.send(embed = discord.Embed(title= "즐겨찾기", description = f"[{music}]({ytrul})이(가) 정상적으로 추가되었어요", color = 0x0097ff))
+
+@bot.command(aliases=["f-","F-","b-","B-","ㄹ-","ㅠ-"]) #즐겨찾기 삭제
+async def 즐겨찾기삭제(ctx, *, number):
+    await ctx.message.delete()
+    userid = ctx.message.author.id
+    file = f"./joy/{userid}.txt"
+    if not os.path.isfile(file): #즐겨찾기없다면 userid로 파일만듬
+        f = open(f"./joy/{userid}.txt","w")
+        f.close()
+    
+    list_file = open(file, 'r').read().split('\n')
+    list_file = list(filter(None,list_file))
+    if len(list_file) < int(number):
+        msg = await ctx.send("입력한 숫자가 잘못되었거나 즐겨찾기의 범위를 초과하였습니다.")
+        time.sleep(5)
+        await msg.delete()
+    elif len(list_file) >= int(number):
+        f=open(f"./joy/{userid}.txt","w")
+        number1=int(number)-1
+        del list_file[number1]
+        f.write('\n'.join(list_file))
+        channel = await ctx.author.create_dm()
+        await channel.send(embed = discord.Embed(title= "즐겨찾기", description = f"{number}번째 즐겨찾기가 삭제되었어요.", color = 0x0097ff))
+
 
 
 bot.run(봇토큰)
