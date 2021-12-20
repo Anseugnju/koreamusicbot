@@ -1,7 +1,9 @@
+import os
 import os.path
 import discord
 from discord import client
 from selenium.webdriver.chrome import options
+from selenium.webdriver.chrome.service import Service
 import yt_dlp
 from yt_dlp import YoutubeDL
 import bs4
@@ -18,11 +20,12 @@ from discord.ext import commands
 import sys
 
 봇토큰="" #당신의 봇토큰을 넣어주세여
-채널ID=000000000000000 #음악싸개가 있어야할 채널ID를 넣어주세요
+채널ID=000000000000 #음악싸개가 있어야할 채널ID를 넣어주세요
 명령어="!" #command_prefix
-chromedriver_dir = "" #크롬드라이버 경로
+chromedriver_dir = Service("") #크롬드라이버 경로
+ffmpeg_dir = "" #ffmpeg 경로
 YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist':'True'}
-FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn', 'executable': ffmpeg_dir}
 
 bot = commands.Bot(command_prefix = 명령어, help_command=None)
 now_song=[] #지금 노래 정보 [제목,유튜브링크,재생용링크]
@@ -49,7 +52,7 @@ async def on_command_error(ctx, error): #에러시 채팅창에 표시
         print(error)
         await ctx.message.delete()
         print("에러발생!")
-        time.sleep(5)
+        await asyncio.sleep(5)
         await msg.delete()
     except:
         pass
@@ -202,12 +205,11 @@ async def 새로고침(message,helpme): #노래 상태 1초마다 변경
             except:
                 sys.exit()
 
-def tlwkr(ctx): #에러뜨길래 한번 해봄
+def tlwkr(ctx): #오류뜨길래 그냥 넣어봄
     try:
         vc.play(discord.FFmpegPCMAudio(now_song[2], **FFMPEG_OPTIONS), after=lambda e:play_next(ctx))
     except:
         play_next(ctx)
-
 
 def embed_play(): #노래 임베드 내용
     datetime_utc = datetime.utcnow()
@@ -237,16 +239,14 @@ def search(msg): #유튜브 검색
         yturl = msg
         
         options = webdriver.ChromeOptions()
-        options.binary_location = '/app/.apt/usr/bin/google-chrome'
-        options.add_argument("--no-sandbox")
-        options.add_argument("--headless")
-        driver = webdriver.Chrome("/app/.chromedriver/bin/chromedriver", options = options)
+        options.add_experimental_option('excludeSwitches', ['enable-logging'])
+        options.add_argument("headless")
+        driver = webdriver.Chrome(service=chromedriver_dir, options = options)
         driver.get(msg)
         source = driver.page_source
         bs = bs4.BeautifulSoup(source, 'lxml')
         title = bs.select_one("body > div > meta").get('content')
         thumbnailtest = bs.select("body > div > link")[1].get('href')
-        print(title)
         with YoutubeDL(YDL_OPTIONS) as ydl:
             info = ydl.extract_info(yturl, download=False)
             formats = info['formats']
@@ -258,10 +258,8 @@ def search(msg): #유튜브 검색
     주소 = "https://www.youtube.com/results?search_query="+msg #검색
 
     options = webdriver.ChromeOptions()
-    options.binary_location = '/app/.apt/usr/bin/google-chrome'
-    options.add_argument("--no-sandbox")
-    options.add_argument("--headless")
-    driver = webdriver.Chrome("/app/.chromedriver/bin/chromedriver", options = options)
+    options.add_argument("headless")
+    driver = webdriver.Chrome(service=chromedriver_dir, options = options)
     driver.get(주소)
     source = driver.page_source
     bs = bs4.BeautifulSoup(source, 'lxml')
@@ -285,12 +283,9 @@ def search(msg): #유튜브 검색
 def next_search(): #자동재생시 다음노래 검색
 
     options = webdriver.ChromeOptions()
-    options.binary_location = '/app/.apt/usr/bin/google-chrome'
-    options.add_argument("--no-sandbox")
-    options.add_argument("--headless")
-    driver = webdriver.Chrome("/app/.chromedriver/bin/chromedriver", options = options)
+    options.add_argument("headless")
+    driver = webdriver.Chrome(service=chromedriver_dir, options = options)
     driver.get(now_song[1])
-    time.sleep(3)
     source = driver.page_source
     bs = bs4.BeautifulSoup(source, 'lxml')
     next_song_thumbnail = bs.select('#dismissible > ytd-thumbnail > a > yt-img-shadow > img')
@@ -454,15 +449,15 @@ async def 목록삭제(ctx, *, number):
     except:
         if len(next_song) == 0:
             msg = await ctx.send("대기열에 노래가 없어 삭제할 수 없어요!")
-            time.sleep(5)
+            await asyncio.sleep(5)
             await msg.delete()
         elif len(next_song) < int(number):
             msg = await ctx.send("숫자의 범위가 목록개수를 벗어났습니다!")
-            time.sleep(5)
+            await asyncio.sleep(5)
             await msg.delete()
         elif number=="":
             msg = await ctx.send("숫자를 입력해주세요!")
-            time.sleep(5)
+            await asyncio.sleep(5)
             await msg.delete()
 
 @bot.command(aliases=["재생목록초기화","listclaer","lc","cl"]) #재생대기열 초기화
@@ -473,7 +468,7 @@ async def 목록초기화(ctx):
         next_song.clear()
     except:
         msg=await ctx.send("아직 아무노래도 등록하지 않았어요.")
-        time.sleep(5)
+        await asyncio.sleep(5)
         await msg.delete()
 
 @bot.command() #자동재생 시작
@@ -552,7 +547,7 @@ async def 즐겨찾기삭제(ctx, *, number):
     list_file = list(filter(None,list_file))
     if len(list_file) < int(number):
         msg = await ctx.send("입력한 숫자가 잘못되었거나 즐겨찾기의 범위를 초과하였습니다.")
-        time.sleep(5)
+        await asyncio.sleep(5)
         await msg.delete()
     elif len(list_file) >= int(number):
         f=open(f"./joy/{userid}.txt","w")
