@@ -8,8 +8,10 @@
     + pip install selenium 웹페이지 크롤링
     + pip install beautifulsoup4 html검색및 처리
     + pip install yt-dlp 유튜브처리
+    + pip install lxml lxml은 lxml임
++ ffmpeg 경로설정
 + 크롬드라이버 경로설정
-+ 봇토큰 채널ID 접두사 크롬드라이버 설정하고 실행하면 끝!
++ 봇토큰 채널ID 접두사 크롬드라이버 ffmpeg 설정하고 실행하면 끝!
 
 
 
