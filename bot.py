@@ -20,9 +20,9 @@ import sys
 봇토큰="" #당신의 봇토큰을 넣어주세여
 채널ID=000000000000000 #음악싸개가 있어야할 채널ID를 넣어주세요
 명령어="!" #command_prefix
+chromedriver_dir = "" #크롬드라이버 경로
 YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist':'True'}
 FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
-chromedriver_dir = "/app/.chromedriver/bin/chromedriver" #chromedriver dev
 
 bot = commands.Bot(command_prefix = 명령어, help_command=None)
 now_song=[] #지금 노래 정보 [제목,유튜브링크,재생용링크]
