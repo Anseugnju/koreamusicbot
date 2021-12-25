@@ -239,8 +239,9 @@ def search(msg): #유튜브 검색
         yturl = msg
         
         options = webdriver.ChromeOptions()
-        options.add_experimental_option('excludeSwitches', ['enable-logging'])
+        options.add_argument("no-sandbox") #bypass OS security model
         options.add_argument("headless")
+        options.add_argument("disable-dev-shm-usage") #overcome limited resource problems
         driver = webdriver.Chrome(service=chromedriver_dir, options = options)
         driver.get(msg)
         source = driver.page_source
@@ -258,7 +259,9 @@ def search(msg): #유튜브 검색
     주소 = "https://www.youtube.com/results?search_query="+msg #검색
 
     options = webdriver.ChromeOptions()
+    options.add_argument("no-sandbox") #bypass OS security model
     options.add_argument("headless")
+    options.add_argument("disable-dev-shm-usage") #overcome limited resource problems
     driver = webdriver.Chrome(service=chromedriver_dir, options = options)
     driver.get(주소)
     source = driver.page_source
@@ -283,7 +286,9 @@ def search(msg): #유튜브 검색
 def next_search(): #자동재생시 다음노래 검색
 
     options = webdriver.ChromeOptions()
+    options.add_argument("no-sandbox") #bypass OS security model
     options.add_argument("headless")
+    options.add_argument("disable-dev-shm-usage") #overcome limited resource problems
     driver = webdriver.Chrome(service=chromedriver_dir, options = options)
     driver.get(now_song[1])
     source = driver.page_source
